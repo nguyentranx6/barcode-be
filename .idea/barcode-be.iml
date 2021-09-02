@@ -8,5 +8,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="@types/mongoose-seeder" level="application" />
+    <orderEntry type="library" name="@types/mongodb-uri" level="application" />
+    <orderEntry type="library" name="@types/mongodb-queue" level="application" />
+    <orderEntry type="library" name="@types/mongoose-aggregate-paginate-v2" level="application" />
+    <orderEntry type="library" name="@types/mongoose-auto-increment" level="application" />
+    <orderEntry type="library" name="@types/mongoose-autopopulate" level="application" />
   </component>
 </module>

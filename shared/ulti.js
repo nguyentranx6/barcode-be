@@ -1,0 +1,38 @@
+const nodemailer = require("nodemailer");
+const config = require('./config')
+const axios = require("axios");
+
+const sendEmail = async (option = null) => {
+    let transport = nodemailer.createTransport(config.NODEMAILER_CONFIG);
+    let message = {
+        from: '"Fred Foo 👻" <barcode360@example.com>', // sender address
+        to: option.mailTo, // list of receivers
+        subject: option.subject, // Subject line
+        text: option.text, // plain text body
+    }
+    let info = await transport.sendMail(message);
+    console.log("Message sent: %s", info.messageId);
+}
+
+const getImgBarcode = async function  (url){
+    try {
+        let value = await axios.get(url);
+        let textData = value.data
+        const imgTags = textData.match(/<img [^>]*src="[^"]*"[^>]*>/gm);
+        let barcodeNumber = textData.match(/barcode_number\s*"\s*>\s*(.+?)<\s*\/\s*p\s*>/)
+        let img;
+        for (let i = 0; i < imgTags.length; i++) {
+            let item = imgTags[i];
+            if(item.includes('src="/hosted')){
+                img = `https://secure.mite.pay360.com${item.match(/srcs*=s*"(.+?)"/)[1]}`;
+                break;
+            }
+        }
+        return {url: img, barcode: barcodeNumber[1]}
+    } catch (e) {
+    }
+}
+
+
+
+module.exports = {sendEmail,getImgBarcode};

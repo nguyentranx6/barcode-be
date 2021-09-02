@@ -1,15 +1,15 @@
 var express = require('express');
 var router = express.Router();
-const controller = require('../controllers/barcode')
+const receiveCallBack = require("../controllers/receive-callback");
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.redirect('http://185.151.51.150:4200/');
 });
-/* Get barcode */
-router.get('/api/barcode', controller.getBarcode);
 
-/* Get Img Barcode */
-//router.get('/api/img-barcode', controller.getImgBarcode);
+
+/* Receive Callback */
+router.post('/merchant/callback', receiveCallBack.receiveCallBack);
+router.get('/merchant/callback', receiveCallBack.receiveCallBack);
 
 module.exports = router;

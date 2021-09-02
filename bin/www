@@ -1,5 +1,7 @@
-#!/usr/bin/env node
 
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
+dotenv.config({path: './config.env'})
 /**
  * Module dependencies.
  */
@@ -15,6 +17,18 @@ var http = require('http');
 var port = normalizePort(process.env.PORT || '3300');
 app.set('port', port);
 
+/*
+* Connect database
+* */
+mongoose.connect(process.env.DATA_CLOUD, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true
+}).then(()=>{
+  console.log(`connect db success!, serve is running at port ${process.env.PORT}`)
+}).catch((err)=> console.log(err))
+
 /**
  * Create HTTP server.
  */
@@ -26,6 +40,7 @@ var server = http.createServer(app);
  */
 
 server.listen(port);
+
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -48,6 +63,11 @@ function normalizePort(val) {
 
   return false;
 }
+/*
+* Nodemon on restart
+* */
+
+
 
 /**
  * Event listener for HTTP server "error" event.
@@ -82,6 +102,7 @@ function onError(error) {
  */
 
 function onListening() {
+  console.log("Server is running at port:", port)
   var addr = server.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
