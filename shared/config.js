@@ -1,6 +1,6 @@
 //API address to receive callback from pay360
 const API_RECEIVE_NOTIFY_BARCODE_CREATE =
-  "http://185.151.51.150/merchant/callback";
+  "http://165.227.236.153/merchant/callback";
 
 //API Address to request create barcode link
 const API_REQUEST_BARCODE =
@@ -17,13 +17,13 @@ const POST_DATA_BARCODE = function (price) {
     paymentMethod: {
       payCash: {},
     },
-    callbacks: {
+    /*callbacks: {
       transactionNotification: {
         url: `${API_RECEIVE_NOTIFY_BARCODE_CREATE}`,
-        /* "format": "REST_XML"*/
+        /!* "format": "REST_XML"*!/
         format: "REST_JSON",
       },
-    },
+    },*/
   };
 };
 
@@ -40,8 +40,8 @@ const yahoo = {
   port: 587,
   secure: false,
   auth: {
-    user: "nguyentranx12@yahoo.com",
-    pass: "gnqeuimxpubtvmca",
+    user: "",
+    pass: "",
   },
 }
 
@@ -51,8 +51,8 @@ const gmail = {
   port: 587,
   secure: false,
   auth: {
-    user: "thietkenhapho24h@gmail.com",
-    pass: "xheouajeoosbsqyz",
+    user: "barcode.payment.uk@gmail.com",
+    pass: "aigajetrgdfuulpo",
   },
 }
 

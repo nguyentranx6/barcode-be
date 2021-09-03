@@ -4,7 +4,7 @@ const receiveCallBack = require("../controllers/receive-callback");
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.redirect('http://185.151.51.150:4200/');
+  res.redirect('http://165.227.236.153:8888/');
 });
 
 

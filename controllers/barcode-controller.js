@@ -8,9 +8,10 @@ exports.saveNewBarcode = async (req,res,next) => {
     try {
             let newBarcode = new Barcode(req.body);
             let result = await newBarcode.save();
+        console.log("save success",)
             res.status(200).send({status: "success",result})
     } catch (e) {
-        res.status(500).send({status: "fail", result: null})
+        res.status(500).send({status: "fail", error: e})
         next(e)
     }
 };
@@ -29,7 +30,7 @@ exports.getBarcode = async (req, res, next) => {
     }
     catch (e) {
         console.log("e", e)
-        res.status(500).send(e)
+        res.status(500).send({status: "fail", error: e})
         next(e);
     }
 }
@@ -40,6 +41,7 @@ exports.getAllBarcode = async (req,res,next) => {
 
         res.status(200).send({data: newBarcode})
     } catch (e) {
+        res.status(500).send({status: "fail", error: e})
         next(e)
     }
 };
@@ -56,6 +58,50 @@ exports.deleteBarcode = async (req,res,next) => {
             res.status(404).send({message: "Error !!!, Can not find this item", status: "fail"})
         }
     } catch (e) {
+        next(e)
+    }
+};
+
+//Check invoice number is exist
+exports.checkInvoiceNumber = async (req,res,next) => {
+    try {
+        let {invoice} = req.query;
+        console.log("invoice", invoice)
+
+        let result = await Barcode.find({invoiceNumber: invoice});
+        console.log("result", result)
+        if(result.length>0){
+            res.status(200).send({status: "fail",message: "This invoice is exist!"})
+        } else  {
+            res.status(404).send({status: "success", message: "This invoice is not exist!"})
+        }
+
+
+    } catch (e) {
+        console.log("e", e)
+        res.status(500).send({status: "fail", error: e})
+        next(e)
+    }
+};
+
+//Check invoice number is exist
+exports.searchBarcode = async (req,res,next) => {
+    try {
+        let {key} = req.query;
+        console.log("key", key)
+
+        let result = await Barcode.find({invoiceNumber: invoice});
+        console.log("result", result)
+        if(result.length>0){
+            res.status(200).send({status: "fail",message: "This invoice is exist!"})
+        } else  {
+            res.status(404).send({status: "success", message: "This invoice is not exist!"})
+        }
+
+
+    } catch (e) {
+        console.log("e", e)
+        res.status(500).send({status: "fail", error: e})
         next(e)
     }
 };

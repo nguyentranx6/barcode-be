@@ -16,6 +16,7 @@ exports.receiveCallBack = async (req, res, next) => {
 
     //create data to save into database and send email;
     let data = req.body;
+      console.log("Daa", data)
     let status = data.transaction.status;
     let stage = data.transaction.stage;
     let transactionId = data.transaction.transactionId;
@@ -32,7 +33,7 @@ exports.receiveCallBack = async (req, res, next) => {
                 { transactionId },
                 {
                     $set: {
-                        status: "complete",
+                        status: "paid",
                         receivedTime: receivedTime,
                     },
                 }
@@ -42,11 +43,12 @@ exports.receiveCallBack = async (req, res, next) => {
 
             //Send email to notify success status
             let option = {
-                mailTo: "vewaho5793@mnqlm.com",
+                mailTo: "binahol611@enamelme.com",
                 subject: `Transaction complete - ${transactionId}`,
                 text: `Transaction ${transactionId} had completed`,
             };
             /*await Ulti.sendEmail(option);*/
+
         } else {
             //Update database fail status
             let item = await Barcode.findOneAndUpdate(
@@ -65,7 +67,7 @@ exports.receiveCallBack = async (req, res, next) => {
 
             //Send email to notify fail status
             let option = {
-                mailTo: "vewaho5793@mnqlm.com",
+                mailTo: "binahol611@enamelme.com",
                 subject: `Transaction failed - ${transactionId}`,
                 text: `Transaction ${transactionId} had failed`,
             };

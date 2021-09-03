@@ -2,10 +2,14 @@ const mongoose = require("mongoose");
 
 const barcodeSchema = new mongoose.Schema(
   {
-      name: {
+      clientName: {
           type: String,
           trim: true,
-          default: ''
+      },
+      invoiceNumber: {
+          type: String,
+          trim: true,
+          unique: true
       },
       email: {
           type: String,
@@ -33,7 +37,7 @@ const barcodeSchema = new mongoose.Schema(
       },
       status: {
           type: String,
-          enum: ["pending", "complete", "fail"],
+          enum: ["pending", "paid", "fail"],
           default: 'pending'
       },
       transactionTime: {
