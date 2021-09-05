@@ -19,7 +19,7 @@ const getImgBarcode = async function  (url){
         let value = await axios.get(url);
         let textData = value.data
         const imgTags = textData.match(/<img [^>]*src="[^"]*"[^>]*>/gm);
-        let barcodeNumber = textData.match(/barcode_number\s*"\s*>\s*(.+?)<\s*\/\s*p\s*>/)
+       // let barcodeNumber = textData.match(/barcode_number\s*"\s*>\s*(.+?)<\s*\/\s*p\s*>/)
         let img;
         for (let i = 0; i < imgTags.length; i++) {
             let item = imgTags[i];
@@ -28,8 +28,10 @@ const getImgBarcode = async function  (url){
                 break;
             }
         }
-        return {url: img, barcode: barcodeNumber[1]}
+        return img;
+
     } catch (e) {
+        console.log("error when scrap img barcode", e);
     }
 }
 

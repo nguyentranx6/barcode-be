@@ -17,13 +17,13 @@ const POST_DATA_BARCODE = function (price) {
     paymentMethod: {
       payCash: {},
     },
-    /*callbacks: {
+    callbacks: {
       transactionNotification: {
         url: `${API_RECEIVE_NOTIFY_BARCODE_CREATE}`,
-        /!* "format": "REST_XML"*!/
+        /* "format": "REST_XML"*/
         format: "REST_JSON",
       },
-    },*/
+    },
   };
 };
 

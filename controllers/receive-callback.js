@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Ulti = require("../shared/ulti");
 const Barcode = require("../models/barcodeModel");
+const Notify = require("../models/notifyModel");
 
 exports.receiveCallBack = async (req, res, next) => {
   try {
@@ -21,6 +22,7 @@ exports.receiveCallBack = async (req, res, next) => {
     let stage = data.transaction.stage;
     let transactionId = data.transaction.transactionId;
     let receivedTime = data.transaction.receivedTime;
+    let barcodeNumber = data.transaction.barcode;
 
     //Logging data
       console.log("Status", status);
@@ -29,15 +31,30 @@ exports.receiveCallBack = async (req, res, next) => {
     setTimeout(async ()=>{
         if (status === "SUCCESS" && stage === "AUTHORISATION") {
             //Update status of transaction into database
+            console.log("transctionID", transactionId)
             let item = await Barcode.findOneAndUpdate(
-                { transactionId },
+                { barcodeNumber },
                 {
                     $set: {
                         status: "paid",
                         receivedTime: receivedTime,
+                        transactionId: transactionId
                     },
                 }
             );
+            console.log("itemUpdate", item)
+            //Logging status update barcode
+            item ? console.log("Update success") : console.log("Update fail !!!");
+            if(!item){
+                return;
+            }
+            //Update status to notify collection
+            let barcodeId = item._id;
+            let newNotify = await new Notify({barcodeId});
+            let resultSaveNotify = await newNotify.save();
+            //Logging status save notify
+            resultSaveNotify ? console.log("Create notify success") : console.log("Create notify fail !!!");
+
             //Logging status
             item ? console.log("Update success") : console.log("Update fail !!!");
 
@@ -65,6 +82,10 @@ exports.receiveCallBack = async (req, res, next) => {
                 ? console.log("Update fail status success")
                 : console.log("Update fail status fail !!!");
 
+            if(!item){
+                return;
+            }
+
             //Send email to notify fail status
             let option = {
                 mailTo: "binahol611@enamelme.com",
@@ -73,7 +94,7 @@ exports.receiveCallBack = async (req, res, next) => {
             };
             /*await Ulti.sendEmail(option);*/
         }
-    }, 20000)
+    }, 6000)
 
     console.log("Complete");
   } catch (e) {
