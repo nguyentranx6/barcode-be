@@ -2,6 +2,7 @@ const axios = require("axios");
 const config = require("../shared/config");
 const Ulti = require("../shared/ulti");
 const Barcode = require("../models/barcodeModel");
+const Client = require("../models/clientModel");
 
 //Save barcode to database and notify
 /*exports.saveNewBarcode = async (req, res, next) => {
@@ -33,29 +34,54 @@ const Barcode = require("../models/barcodeModel");
 //Call to Pay360 API to create barcode link and img barcode
 exports.generateBarcode = async (req, res, next) => {
   try {
-    console.log("req.body.data", req.body)
+    console.log("req.body.data", req.body);
     //Get data from client
-    let {clientName,invoiceNumber,price,email,clientId} = req.body;
+    let { clientName, invoiceNumber, price, email, customClientId } = req.body;
 
-    if(!price){
-      return res.send({status: "fail",message: "Please input price!",})
+    //Create user
+    let newClientData = { clientName, email, customClientId };
+    let clientId;
+
+    //Check user is exist
+    let isExistUser = await Client.find({
+      $or: [{ customClientId }, { email }],
+    });
+    console.log("isExistUser", isExistUser);
+    if (isExistUser.length > 0) {
+      clientId = isExistUser._id;
+      console.log("Client is exist");
+    } else {
+      let newClientCreate = await new Client(newClientData);
+      let newClient = await newClientCreate.save();
+      if (!newClient) {
+        res.send({ status: "fail", message: "Create new client get error!" });
+      }
+      //Logging
+      console.log("Create client success !");
+      clientId = newClient._id;
     }
-   //Use axios to call 360API
+
+    if (!price) {
+      return res.send({ status: "fail", message: "Please input price!" });
+    }
+    //Use axios to call 360API
     let val = await axios.post(
       config.API_REQUEST_BARCODE,
       config.POST_DATA_BARCODE(price),
       { headers: config.HEADER_AUTHORIZATION }
     );
     //If get error send error to client
-    if(!val){res.status(500).send({ status: "fail", error: "It get error when call 360API" })}
+    if (!val) {
+      res
+        .status(500)
+        .send({ status: "fail", error: "It get error when call 360API" });
+    }
 
     //Check status of create barcode
     let status = val.data.transaction.status;
-    if(status !== "SUCCESS"){
-      res.status(500).send({ status: "fail", error: "Generate barcode fail" })
+    if (status !== "SUCCESS") {
+      res.status(500).send({ status: "fail", error: "Generate barcode fail" });
     }
-
-
 
     //Get data from 360API
     let url = val.data.processing.payCashResponse.barcodeUrl;
@@ -63,11 +89,13 @@ exports.generateBarcode = async (req, res, next) => {
     let transactionTime = val.data.transaction.transactionTime;
     let relatedTransaction = val.data.transaction.transactionId;
 
-
     //Use Axios to get Img of barcode
     let imgBarcodeUrl = await Ulti.getImgBarcode(url);
-    if(!imgBarcodeUrl){
-      res.status(500).send({ status: "fail", error: "It get error when call get Image of barcode" })
+    if (!imgBarcodeUrl) {
+      res.status(500).send({
+        status: "fail",
+        error: "It get error when call get Image of barcode",
+      });
     }
 
     //Logging status
@@ -81,25 +109,25 @@ exports.generateBarcode = async (req, res, next) => {
       relatedTransaction,
       imgBarcodeUrl,
       price,
-      clientName,
       invoiceNumber,
-      email,
-      clientId
-    }
+      clientId,
+    };
 
     //Save barcode to database
     let newBarcode = await new Barcode(newBarcodeData);
     let result = await newBarcode.save();
 
-    if(!result){
+    if (!result) {
       res
-          .status(500)
-          .send({status: "fail",message: "Save barcode get error" });
+        .status(500)
+        .send({ status: "fail", message: "Save barcode get error" });
     }
     //Send to client if success
-    res
-      .status(201)
-      .send({status: "success", data: result, imgBarcodeUrl, message: "Success created barcode" });
+    res.status(201).send({
+      status: "success",
+      data: result,
+      message: "Success created barcode",
+    });
   } catch (e) {
     console.log("error when create barcode", e);
     res.status(500).send({ status: "fail", error: e });
@@ -141,7 +169,7 @@ exports.checkInvoiceNumber = async (req, res, next) => {
   try {
     let { invoice } = req.query;
 
-    if(!invoice){
+    if (!invoice) {
       return;
     }
     /*invoice = invoice.toLowerCase();*/
@@ -167,18 +195,40 @@ exports.checkInvoiceNumber = async (req, res, next) => {
 //Check invoice number is exist
 exports.searchBarcode = async (req, res, next) => {
   try {
-    let { key, filter, size, page, order,get} = req.query;
+    let { key, filter, size, page, order, get } = req.query;
+    page = parseInt(page);
+    size = parseInt(size);
     let data;
-    if(get){
-      console.log("get", get)
-      let barcode = await Barcode.findById({_id: get})
-      console.log("barcode", barcode)
+    let n;
+
+    //Create pipeline
+    let pipeline = [
+      {
+        $facet: {
+          data: [
+            { $match: {} },
+            { $skip: page },
+            { $limit: size },
+            { $sort: { createdAt: -1 } },
+          ],
+          totalCount: [{ $count: "count" }],
+        },
+      },
+    ];
+
+    if (get) {
+      console.log("get", get);
+      let barcode = await Barcode.findById({ _id: get }).populate({
+        path: "client",
+        select: "_id email customClientId clientName",
+      });
+      console.log("barcode", barcode);
       res.status(200).send({ data: barcode });
     }
     switch (filter) {
       case "all":
-        console.log("all");
-        data = await Barcode.find({}).sort({transactionTime: -1});
+        let result = await Barcode.aggregate(pipeline);
+        data = result[0];
         break;
       case "clientName":
         console.log("2");
@@ -201,7 +251,7 @@ exports.searchBarcode = async (req, res, next) => {
         console.log("5");
         data = await Barcode.find({ transactionId: key });
         break;
-        case "barcodeNumber":
+      case "barcodeNumber":
         console.log("5");
         data = await Barcode.find({ barcodeNumber: key });
         break;
@@ -210,7 +260,7 @@ exports.searchBarcode = async (req, res, next) => {
         break;
     }
     console.log("6");
-    res.status(200).send({ data });
+    res.status(200).send({ data, n });
   } catch (e) {
     console.log("e", e);
     res.status(500).send({ status: "fail", error: e });

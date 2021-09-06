@@ -17,5 +17,14 @@ const notifySchema = new mongoose.Schema(
     }
 );
 
+notifySchema.methods.toJSON = function () {
+    const notify = this;
+    const NotifyObject = notify.toObject();
+    delete NotifyObject.createdAt;
+    delete NotifyObject.updatedAt;
+    delete NotifyObject.__v;
+    return NotifyObject;
+};
+
 const Notify = mongoose.model("Notify", notifySchema);
 module.exports = Notify;

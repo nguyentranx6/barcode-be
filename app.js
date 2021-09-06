@@ -11,6 +11,7 @@ var usersRouter = require('./routes/usersRouter');
 var barcodeRouter = require('./routes/barcode-router');
 var settingRouter = require('./routes/settingRouter');
 var notifyRouter = require('./routes/notifyRouter');
+var clientRouters = require('./routes/clientRouter');
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use('/api/user', usersRouter);
 app.use('/api/barcode', barcodeRouter);
 app.use('/api/setting', settingRouter);
 app.use('/api/notify', notifyRouter);
+app.use('/api/client', clientRouters);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -2,36 +2,22 @@ const mongoose = require("mongoose");
 
 const barcodeSchema = new mongoose.Schema(
   {
-      clientName: {
-          type: String,
-          trim: true,
-          lowercase: true,
-          text: true
-      },
       invoiceNumber: {
           type: String,
           trim: true,
           text: true,
          //lowercase: true,
       },
-      email: {
-          type: String,
-          trim: true,
-          lowercase: true,
-          default: '',
-          text: true
-      },
-      clientId: {
-          type: String,
-          trim: true,
-          lowercase: true,
-          text: true
+      client: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Client'
       },
       url: {
           type: String,
           trim: true,
           required: true,
-          text: true
+          text: true,
+          lowercase: true,
       },
       price: {
           type: Number,
@@ -41,40 +27,50 @@ const barcodeSchema = new mongoose.Schema(
           type: String,
           trim: true,
           default: '',
-          text: true
+          text: true,
+          lowercase: true,
       },
       transactionId: {
           type: String,
           trim: true,
           default: '',
-          text: true
+          text: true,
+          lowercase: true,
       },
       barcodeNumber: {
           type: String,
           trim: true,
           text: true
       },
+      imgBarcodeUrl: {
+          type: String,
+          trim: true,
+          lowercase: true,
+      },
       receivedTime: {
           type: Date,
           default: null,
-          text: true
       },
       status: {
           type: String,
           enum: ["pending", "paid", "fail"],
           default: 'pending',
-          text: true
+
       },
       transactionTime: {
           type: Date,
           trim: true,
-          text: true
       }
   },
   {
     timestamps: true,
   }
 );
-
+barcodeSchema.methods.toJSON = function () {
+    const barcode = this;
+    const BarcodeObject = barcode.toObject();
+    delete BarcodeObject.__v;
+    return BarcodeObject;
+};
 const Barcode = mongoose.model("Barcode", barcodeSchema);
 module.exports = Barcode;
