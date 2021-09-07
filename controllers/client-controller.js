@@ -81,6 +81,8 @@ exports.searchClient = async (req, res, next) => {
         size = parseInt(size);
         let data;
         let n;
+        console.log("size", size)
+        console.log("page", page)
 
         //Create pipeline
         let pipeline = [
@@ -90,7 +92,7 @@ exports.searchClient = async (req, res, next) => {
                         { $match: {} },
                         { $skip: page },
                         { $limit: size },
-                        { $sort: { createdAt: -1 } },
+
                     ],
                     totalCount: [{ $count: "count" }],
                 },
@@ -108,6 +110,7 @@ exports.searchClient = async (req, res, next) => {
         }
         switch (filter) {
             case "all":
+                console.log("all")
                 let result = await Client.aggregate(pipeline);
                 data = result[0];
                 break;

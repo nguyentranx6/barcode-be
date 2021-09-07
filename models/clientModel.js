@@ -25,7 +25,6 @@ const clientSchema = new mongoose.Schema(
 clientSchema.methods.toJSON = function () {
     const client = this;
     const ClientObject = client.toObject();
-    delete ClientObject.createdAt;
     delete ClientObject.updatedAt;
     delete ClientObject.__v;
     return ClientObject;

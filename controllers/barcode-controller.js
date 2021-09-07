@@ -206,10 +206,18 @@ exports.searchBarcode = async (req, res, next) => {
       {
         $facet: {
           data: [
-            { $match: {} },
+            { $match: {_id: ""} },
             { $skip: page },
             { $limit: size },
             { $sort: { createdAt: -1 } },
+            {
+              $lookup: {
+                from: Client.collection.name,
+                localField: "clientId",
+                foreignField: "_id",
+                as: "client",
+              }
+            }
           ],
           totalCount: [{ $count: "count" }],
         },
