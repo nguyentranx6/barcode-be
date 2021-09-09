@@ -17,28 +17,34 @@ exports.receiveCallBack = async (req, res, next) => {
 
     //create data to save into database and send email;
     let data = req.body;
-      console.log("Daa", data)
+      console.log("Data", data)
     let status = data.transaction.status;
     let stage = data.transaction.stage;
     let transactionId = data.transaction.transactionId;
     let receivedTime = data.transaction.receivedTime;
-    let barcodeNumber = data.transaction.barcode;
+    let barcodeNumber = data.processing.payCashResponse.barcode;
+    let expiryDays = data.processing.payCashResponse.expiryDays;
 
+    if(!barcodeNumber){
+        console.log("barcodeNumber not exist!");
+        res.status(500).send({status: 'fail', message: "barcodeNumber not exist!"})
+    }
     //Logging data
       console.log("Status", status);
       console.log("Stage", stage);
 
     setTimeout(async ()=>{
-        if (status === "SUCCESS" && stage === "AUTHORISATION") {
+        if (barcodeNumber) {
             //Update status of transaction into database
             console.log("transctionID", transactionId)
             let item = await Barcode.findOneAndUpdate(
-                { barcodeNumber },
+                { transactionId },
                 {
                     $set: {
                         status: "paid",
                         receivedTime: receivedTime,
-                        transactionId: transactionId
+                        transactionId: transactionId,
+                        expiryDays: expiryDays,
                     },
                 }
             );
@@ -99,6 +105,7 @@ exports.receiveCallBack = async (req, res, next) => {
     console.log("Complete");
   } catch (e) {
     console.log("error", e);
+    res.status(500).send({status: 'fail', message: e})
     next(e);
   }
 };

@@ -3,6 +3,8 @@ const config = require('../shared/config')
 const Ulti = require('../shared/ulti')
 const Notify = require("../models/notifyModel");
 const Barcode = require("../models/barcodeModel");
+const {ObjectId} = require("mongodb");
+const Client = require("../models/clientModel");
 
 //Request to database to get new barcode had paid
 exports.getNotify = async (req,res,next) => {
@@ -146,6 +148,85 @@ exports.updateStatusNotifyAfterRead = async (req,res,next) => {
     } catch (e) {
         res.status(500).send({status: "fail", error: e})
         next(e)
+    }
+};
+
+//Get all or new notify and pagination
+exports.searchNotify = async (req, res, next) => {
+    try {
+        let { filter, size, page, order, action} = req.query;
+        page = parseInt(page);
+        size = parseInt(size);
+        filter = filter.toLowerCase();
+        console.log("page", page);
+        console.log("size", size);
+        let data;
+        //Create pipeline and mat condition
+        let pipeline;
+        let matchObj;
+        //Switch case: all or new fitler
+        switch (filter) {
+            case "all":
+                console.log("all");
+                matchObj = {};
+                break;
+            case "new":
+                //Assign to matchObj
+                matchObj = { status: 'unread' };
+                break;
+            default:
+                break;
+        }
+        pipeline = [
+            {
+                $facet: {
+                    data: [
+                        { $match: matchObj },
+                        { $sort: { updatedAt: -1 } },
+                        { $skip: page },
+                        { $limit: size },
+                        {
+                            $lookup: {
+                                from: Barcode.collection.name,
+                                localField: "barcodeId",
+                                foreignField: "_id",
+                                as: "barcodeInfo",
+                            }
+                        },
+                        {
+                            $unwind: "$barcodeInfo"
+                        },
+                        {
+                            $project: {
+                                _id: "$_id",
+                                barcodeId: "$barcodeId",
+                                status: "$status",
+                                updatedAt: "$updatedAt",
+                                barcodeNumber: "$barcodeInfo.barcodeNumber",
+                            }
+                        },
+                        { $sort: { updatedAt: -1 } },
+                    ],
+                    totalCount: [{ $match: matchObj }, { $count: "count" }],
+                },
+            },
+        ];
+        data = await Notify.aggregate(pipeline);
+        res.status(200).send({ data: data[0] });
+
+        //After send new notify, update status unread --> read
+        if(action ==='update'){
+            let notifyUpdate = await Notify.updateMany({status: 'unread'},{status:'read'});
+            if(notifyUpdate){
+                console.log("Update status read success",)
+            } else {
+                res.status(500).send({ status: "fail", error: e , message: "update status read fail"});
+            }
+        }
+    } catch (e) {
+        console.log("e", e);
+        res.status(500).send({ status: "fail", error: e });
+        next(e);
     }
 };
 

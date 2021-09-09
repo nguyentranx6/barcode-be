@@ -5,10 +5,9 @@ const barcodeSchema = new mongoose.Schema(
       invoiceNumber: {
           type: String,
           trim: true,
-          text: true,
-         //lowercase: true,
+         lowercase: true,
       },
-      client: {
+      clientId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Client'
       },
@@ -16,31 +15,21 @@ const barcodeSchema = new mongoose.Schema(
           type: String,
           trim: true,
           required: true,
-          text: true,
           lowercase: true,
       },
       price: {
           type: Number,
           trim: true
       },
-      relatedTransaction: {
-          type: String,
-          trim: true,
-          default: '',
-          text: true,
-          lowercase: true,
-      },
       transactionId: {
           type: String,
           trim: true,
           default: '',
-          text: true,
           lowercase: true,
       },
       barcodeNumber: {
           type: String,
           trim: true,
-          text: true
       },
       imgBarcodeUrl: {
           type: String,
@@ -60,7 +49,14 @@ const barcodeSchema = new mongoose.Schema(
       transactionTime: {
           type: Date,
           trim: true,
-      }
+      },
+      expiryDays: {
+          type: String,
+          trim: true,
+          default: ''
+      },
+      history: [
+      ]
   },
   {
     timestamps: true,

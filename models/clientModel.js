@@ -5,7 +5,8 @@ const clientSchema = new mongoose.Schema(
         customClientId: {
             type: String,
             lowercase: true,
-            trim: true
+            trim: true,
+            unique: true
         },
         clientName: {
             type: String,
